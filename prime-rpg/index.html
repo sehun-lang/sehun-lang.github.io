@@ -91,28 +91,38 @@
     <div class="layout">
       <section class="card" style="display:grid;grid-template-rows:auto auto auto 1fr;gap:8px;min-height:0">
         <div>
-          <div class="title">플레이어</div>
-          <div class="grid2">
-            <div><div class="muted small">레벨</div><div class="big" id="level">1
-        <div><div class="muted small">경험치</div><div class="bar"><span id="xpbar" style="width:0%"></span></div>
-        <div class="small muted" id="xpText">다음 레벨까지 0 XP (0%)</div></div>
-          </div>
-          <div class="row" style="justify-content:space-between; margin-top:8px; white-space:nowrap">
-  <div class="muted small">
-    공격력 <span class="big" id="atk">5</span> · 스테이지 <strong id="stage">1-1</strong>
+  <div class="title">플레이어</div>
+
+  <div class="grid2">
+    <div>
+      <div class="muted small">레벨</div>
+      <div class="big" id="level">1</div>
+    </div>
+    <div></div>
   </div>
-  <div class="lives" id="lives"></div>
+
+  <!-- 경험치 바 + 남은 XP 텍스트 -->
+  <div class="muted small">경험치</div>
+  <div class="bar"><span id="xpbar" style="width:0%"></span></div>
+  <div class="small muted" id="xpText">다음 레벨까지 0 XP (0%)</div>
+
+  <!-- 공격력 · 스테이지 한 줄 -->
+  <div class="row" style="justify-content:space-between; margin-top:8px; white-space:nowrap">
+    <div class="muted small">
+      공격력 <span class="big" id="atk">5</span> · 스테이지 <strong id="stage">1-1</strong>
+    </div>
+    <div class="lives" id="lives"></div>
+  </div>
+
+  <ul id="stageSteps" class="steps" aria-label="스테이지 진행">
+    <li>1</li><li>2</li><li>3</li><li>4</li><li>5</li>
+  </ul>
 </div>
 
-          <ul id="stageSteps" class="steps" aria-label="스테이지 진행">
-            <li>1</li><li>2</li><li>3</li><li>4</li><li>5</li>
-          </ul>
-        </div>
         </div>
 <div style="flex:1">
   <div class="muted small">HP</div>
   <div class="bar hp"><span id="hpbar" style="width:100%"></span></div>
-  <!-- ⬇⬇ 여기 삽입 -->
   <div class="small" id="hpText">100 / 100</div>
 </div>
 
@@ -254,17 +264,16 @@ function renderBars(){
   setText('#stage',stageTxt);
 
   // HP 바와 숫자
-  setWidth('#hpbar',(state.hp/state.maxHp*100).toFixed(1)+'%');
-  setText('#hpText', state.hp + ' / ' + state.maxHp);   // ✅ 추가된 부분
+  setWidth('#hpbar', (state.hp/state.maxHp*100).toFixed(1)+'%');
+  setText('#hpText', state.hp + ' / ' + state.maxHp);
+
 
   // XP 바
-  const need=needXpFor(state.level);
-  setWidth('#xpbar',Math.min(100,state.xp/need*100).toFixed(1)+'%');
+const need = needXpFor(state.level);
+const pct  = Math.min(100, state.xp/need*100);
+setWidth('#xpbar', pct.toFixed(1)+'%');
+setText('#xpText', `다음 레벨까지 ${Math.max(0, Math.ceil(need - state.xp))} XP (${Math.floor(pct)}%)`);
 
-   // ⬇ 추가: 남은 경험치 텍스트
-  const remain = Math.max(0, Math.ceil(need - state.xp));  // 남은 양을 보기 좋게 올림
-  const xpStr = `다음 레벨까지 ${remain} XP (${Math.floor(pct)}%)`;
-  setText('#xpText', xpStr);
   
   // 레벨, 공격력
   setText('#level',state.level);
@@ -500,21 +509,33 @@ const want = target.includes('둘째') ? 2 : (target.includes('첫째') ? 1 : -1
   }
 
   function safeNextProblem(){
-    try{ nextProblem(); }catch(e){ log('문제 생성 오류: '+(e?.message||e)); }
-    // 2중 감시: 준비중 문구가 남아있으면 폴백 강제
-    const ensure=()=>{
-      const qEl=document.getElementById('question'); const txt=(qEl?.textContent||'').trim();
-      if(!state.problem || !state.problem.text || txt==='' || txt.includes('문제 준비중') || txt.includes('문제 준비 중')){
-        state.problem = { text:'1.2 ÷ 0.3', ans:4, hint:'제수를 정수로 만들기', kind:'number' };
-        setText('#question', state.problem.text);
-        setText('#hint','');
-        const a=$('#answer'); if(a) a.value='';
-        log('폴백 문제 적용');
-      }
-    };
-    setTimeout(ensure, 80);
-    setTimeout(ensure, 200);
+  try { nextProblem(); } catch (e) {
+    log('문제 생성 오류: '+(e?.message||e));
   }
+
+  // 강제 폴백: 여러 번 확인해서 "문제 준비 중…"이면 즉시 대체 문제 세팅
+  const force = ()=>{
+    const qEl = document.getElementById('question');
+    const txt = (qEl?.textContent||'').trim();
+    const needFallback =
+      !state.problem || !state.problem.text ||
+      !qEl || !txt || txt.includes('문제 준비중') || txt.includes('문제 준비 중');
+
+    if (needFallback) {
+      state.problem = { text:'1.2 ÷ 0.3', ans:4, hint:'제수를 정수로 만들기', kind:'number' };
+      setText('#question', state.problem.text);
+      setText('#hint','');
+      const a = document.querySelector('#answer'); if(a) a.value='';
+      log('폴백 문제 강제 적용');
+    }
+  };
+
+  setTimeout(force, 60);
+  setTimeout(force, 200);
+  setTimeout(force, 600);
+  setTimeout(force, 1200);
+}
+
 
   function finalize(correct, msg){
     log(msg);
@@ -847,11 +868,22 @@ function stageName(idx){
     items.forEach((li,i)=>{ if(i < state.stage.index) li.classList.add('active'); else li.classList.remove('active'); });
   }
 
-  window.addEventListener('DOMContentLoaded', async ()=>{
-    renderBars(); newMonster(); safeNextProblem(); bindUI();
-    loadSettings();
-    renderRanking(await fetchRanking());
-  });
+window.addEventListener('DOMContentLoaded', async ()=>{
+  try{
+    renderBars();           // UI 첫 렌더
+    newMonster();           // 몬스터 생성
+    safeNextProblem();      // 문제 생성(강한 가드)
+    bindUI();               // 이벤트 바인딩
+    loadSettings();         // 이름 등 로컬 설정
+    renderRanking(await fetchRanking()); // 랭킹
+  }catch(e){
+    log('부팅 오류: '+(e?.message||e));
+    // 최후 폴백 문제
+    setText('#question','1.2 ÷ 0.3');
+    state.problem = { text:'1.2 ÷ 0.3', ans:4, hint:'제수를 정수로 만들기', kind:'number' };
+  }
+});
+
     // 전역 오류 로깅: 문제 생성 중 에러를 화면 로그로 표시
   window.addEventListener('error', (e)=>{ try{ log('오류: '+(e?.message||'알 수 없는 오류')); }catch(_){} });
 </script>
