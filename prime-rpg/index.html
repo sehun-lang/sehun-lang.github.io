@@ -162,7 +162,7 @@
       <!-- 📊 랭킹 표 -->
       <section class="card" style="grid-column:1 / -1">
         <div class="title">랭킹</div>
-        <div id="rankingModal" class="log" style="height:auto; max-height:220px; overflow:auto"></div>
+        <div id="rankingModal" class="log" style="height:auto; max-height:160px; overflow:auto"></div>
       </section>
     </div>
 
@@ -692,7 +692,7 @@ function renderRanking(list, targetId = 'ranking'){
   // 모달(targetId='rankingModal')은 5줄만 보이도록 스크롤 래퍼
   if(targetId === 'rankingModal'){
     box.innerHTML = header + `<tbody></tbody></table>
-      <div style="max-height:220px; overflow:auto">
+      <div style="max-height:160px; overflow:auto">
         <table style="width:100%; border-collapse:collapse"><tbody>${rows}</tbody></table>
       </div>`;
   } else {
