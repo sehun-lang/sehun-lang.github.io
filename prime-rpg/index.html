@@ -89,41 +89,52 @@
 
 
     <div class="layout">
-      <section class="card" style="display:grid;grid-template-rows:auto auto auto 1fr;gap:8px;min-height:0">
-        <div>
+<section class="card playerCard">
   <div class="title">플레이어</div>
 
-  <div class="grid2">
-    <div>
-      <div class="muted small">레벨</div>
-      <div class="big" id="level">1</div>
+  <!-- 2열 레이아웃 -->
+  <div class="playerWrap">
+    <!-- 왼쪽: 플레이어 정보 -->
+    <div class="playerInfo">
+      <div class="grid2">
+        <div>
+          <div class="muted small">레벨</div>
+          <div class="big" id="level">1</div>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- 경험치 -->
+      <div class="muted small">경험치</div>
+      <div class="bar"><span id="xpbar" style="width:0%"></span></div>
+      <div class="small muted" id="xpText">다음 레벨까지 0 XP (0%)</div>
+
+      <!-- HP -->
+      <div class="muted small">HP</div>
+      <div class="bar hp"><span id="hpbar" style="width:100%"></span></div>
+      <div class="small" id="hpText">100 / 100</div>
+
+      <!-- 공격력·스테이지 -->
+      <div class="row" style="justify-content:space-between; margin-top:8px; white-space:nowrap">
+        <div class="muted small">
+          공격력 <span class="big" id="atk">5</span> · 스테이지 <strong id="stage">1-1</strong>
+        </div>
+        <div class="lives" id="lives"></div>
+      </div>
+
+      <!-- 스테이지 진행 -->
+      <ul id="stageSteps" class="steps" aria-label="스테이지 진행">
+        <li>1</li><li>2</li><li>3</li><li>4</li><li>5</li>
+      </ul>
     </div>
-    <div></div>
-  </div>
 
-  <!-- 경험치 바 + 남은 XP 텍스트 -->
-  <div class="muted small">경험치</div>
-  <div class="bar"><span id="xpbar" style="width:0%"></span></div>
-  <div class="small muted" id="xpText">다음 레벨까지 0 XP (0%)</div>
-</div>
-<div style="flex:1">
-  <div class="muted small">HP</div>
-  <div class="bar hp"><span id="hpbar" style="width:100%"></span></div>
-  <div class="small" id="hpText">100 / 100</div>
-</div>
-  <!-- 공격력 · 스테이지 한 줄 -->
-  <div class="row" style="justify-content:space-between; margin-top:8px; white-space:nowrap">
-    <div class="muted small">
-      공격력 <span class="big" id="atk">5</span> · 스테이지 <strong id="stage">1-1</strong>
+    <!-- 오른쪽: 전투 로그 -->
+    <div class="playerLog">
+      <div class="title">전투 로그</div>
+      <div id="log" class="log log-resp"></div>
     </div>
-    <div class="lives" id="lives"></div>
   </div>
-
-  <ul id="stageSteps" class="steps" aria-label="스테이지 진행">
-    <li>1</li><li>2</li><li>3</li><li>4</li><li>5</li>
-  </ul>
-</div>
-
+</section>
 
       </section>
       <section class="card rightCol">
