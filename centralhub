@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>학습 RPG 허브</title>
+  <style>
+    :root{
+      --bg:#0f1226; --panel:#171b39; --ink:#e8ecff; --sub:#9aa3d0;
+      --accent:#6ae3ff; --good:#3ce27a; --bad:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,Arial,sans-serif; color:var(--ink);
+      background:radial-gradient(1200px 600px at 70% -10%,#223 0%, #101325 55%, #0b0e1c 100%), var(--bg);}    
+    .wrap{min-height:100vh; max-width:1200px; margin:0 auto; padding:20px; display:grid; grid-template-rows:auto auto 1fr}
+    header{display:flex; gap:12px; align-items:center; justify-content:space-between}
+    h1{font-size:22px; margin:0; letter-spacing:.2px}
+    .muted{color:var(--sub)}
+    .search{display:flex; gap:8px; margin:14px 0}
+    input[type=search]{flex:1; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:#0e1230; color:var(--ink); font-size:16px}
+    .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; overflow:hidden; display:flex; flex-direction:column}
+    .thumb{height:140px; background:#0d1026; display:flex; align-items:center; justify-content:center; font-size:48px}
+    .body{padding:12px 14px}
+    .title{font-weight:800; font-size:16px}
+    .desc{font-size:13px; color:var(--sub); margin-top:6px; min-height:38px}
+    .meta{display:flex; gap:8px; align-items:center; margin-top:10px; font-size:12px; color:var(--sub)}
+    .btn{margin:12px 14px 14px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.16); background:linear-gradient(180deg,#2b2f58,#1d2144); color:#fff; font-weight:800; cursor:pointer; text-align:center; text-decoration:none}
+    .btn:hover{filter:brightness(1.08)}
+    footer{margin-top:18px; font-size:12px; color:var(--sub); opacity:.9}
+    .empty{padding:40px; text-align:center; color:var(--sub)}
+    .tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+    .tag{font-size:11px; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>학습 RPG 허브</h1>
+        <div class="muted">원하는 프로젝트를 선택해 바로 플레이하세요.</div>
+      </div>
+    </header>
+
+    <div class="search">
+      <input id="q" type="search" placeholder="검색: 예) 소수, 비와 비율, 분수, RPG" aria-label="프로젝트 검색"/>
+    </div>
+
+    <main>
+      <div id="grid" class="grid" role="list"></div>
+      <div id="empty" class="empty" style="display:none">검색 결과가 없습니다.</div>
+    </main>
+
+    <footer>
+      © GitHub Pages · 이 허브는 <code>username.github.io</code> 저장소의 <code>index.html</code>로 배포됩니다.
+    </footer>
+  </div>
+
+  <script>
+  // 1) 프로젝트 목록만 수정하면 카드 UI가 자동 생성됩니다.
+  // url은 두 방식 모두 지원
+  //  - 같은 저장소의 서브폴더: './prime-rpg/'
+  //  - 별도 리포의 Project Pages: 'https://username.github.io/ratio-rpg/'
+  const PROJECTS = [
+    {
+      id:'prime-rpg',
+      title:'소수의 나눗셈 RPG',
+      desc:'소수 ÷ 소수, 자연수 ÷ 소수, 반올림, 남는 양까지 단계별 전투형 학습',
+      emoji:'👾',
+      url:'./prime-rpg/', // 또는 절대 URL
+      tags:['수학','소수','나눗셈','6학년']
+    },
+    {
+      id:'ratio-rpg',
+      title:'비와 비율 RPG',
+      desc:'비/비율의 의미, 단위비, 비율식, 실제 문제로 진행하는 전투',
+      emoji:'🛡️',
+      url:'./ratio-rpg/',
+      tags:['수학','비와비율','5~6학년']
+    },
+    // 여기에 추가: { id:'fractions', title:'분수의 덧셈 RPG', desc:'…', emoji:'🧮', url:'./fractions/', tags:['분수','4~5학년'] }
+  ];
+
+  const $ = (s)=>document.querySelector(s);
+  const grid = $('#grid');
+  const empty = $('#empty');
+  const q = $('#q');
+
+  function render(list){
+    grid.innerHTML = '';
+    if(!list.length){ empty.style.display='block'; return; }
+    empty.style.display = 'none';
+    for(const p of list){
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.setAttribute('role','listitem');
+      card.innerHTML = `
+        <div class="thumb" aria-hidden="true">${p.emoji||'🎮'}</div>
+        <div class="body">
+          <div class="title">${p.title}</div>
+          <div class="desc">${p.desc||''}</div>
+          ${p.tags? `<div class="tags">${p.tags.map(t=>`<span class='tag'>${t}</span>`).join('')}</div>`:''}
+        </div>
+        <a class="btn" href="${p.url}" rel="noopener">플레이</a>
+      `;
+      grid.appendChild(card);
+    }
+  }
+
+  function filterProjects(qs){
+    const t = (qs||'').trim().toLowerCase();
+    if(!t) return PROJECTS;
+    return PROJECTS.filter(p=>{
+      const hay = `${p.title} ${p.desc||''} ${(p.tags||[]).join(' ')}`.toLowerCase();
+      return hay.includes(t);
+    });
+  }
+
+  q.addEventListener('input', ()=>{
+    render(filterProjects(q.value));
+  });
+
+  // 키보드 빠른 이동: ↑/↓로 카드 사이 포커스, Enter로 열기
+  document.addEventListener('keydown', (e)=>{
+    if(['ArrowDown','ArrowUp'].includes(e.key)){
+      const btns = [...document.querySelectorAll('.btn')];
+      const i = btns.findIndex(b=>b===document.activeElement);
+      const dir = e.key==='ArrowDown'? 1 : -1;
+      const ni = Math.max(0, Math.min(btns.length-1, (i<0?0:i+dir)));
+      btns[ni]?.focus();
+    }
+  });
+
+  // 초기 렌더
+  render(PROJECTS);
+  </script>
+</body>
+</html>
