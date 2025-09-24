@@ -116,22 +116,6 @@
   <div class="small" id="hpText">100 / 100</div>
 </div>
 
-        <div>
-          <div class="title">장비</div>
-          <div class="equipSlot">
-            <div id="equipA" class="weapon"><span>🗡️ 무기 A 없음</span><span class="tag">빈 슬롯</span><span class="muted small">+0</span></div>
-            <div id="equipB" class="weapon"><span>🗡️ 보조 슬롯 B (무기/방어구)</span><span class="tag">빈 슬롯</span><span class="muted small">+0</span></div>
-          </div>
-        </div>
-
-        <div style="min-height:0">
-          <div class="title">인벤토리</div>
-          <div class="inv" id="inventory"></div>
-          <div class="row" style="justify-content:space-between; margin-top:6px">
-          </div>
-        </div>
-
-        <div class="note">정답을 맞히면 몬스터에게 피해! 처치 시 무기/방어구와 <strong>포션(20%)</strong> 드랍.</div>
       </section>
 
       <section class="card rightCol">
@@ -372,14 +356,20 @@ function renderBars(){
           }
         }
       }
-      else if(idx===4){
-        const a = trimZerosStr(randDec(pick([1,2]))); const b = trimZerosStr(randDec(pick([1,2])));
-        const target = pick(['소수 첫째자리','소수 둘째자리','일의자리']);
-        text = fmt(a)+' ÷ '+fmt(b)+' (몫을 반올림하여'+target+'까지 나타내기)';
-        const raw = parseFloat(a)/parseFloat(b);
-        kind='rounding'; ans={raw, target}; hint='규칙: 5이상 올림, 미만 버림';
-        return {text, ans, hint, kind};
-      }
+      else if (idx === 4) {
+  // 반올림 집중형: 예) 3.5 ÷ 9, 7.2 ÷ 8, 4.0 ÷ 3
+  const a = (rnd(10, 99) / 10).toFixed(1); // 1.0 ~ 9.9 (소수 첫째자리)
+  const b = String(rnd(2, 9));             // 2 ~ 9 (정수 한 자리)
+
+  const target = pick(['소수 첫째자리', '소수 둘째자리', '일의자리']);
+  const text = fmt(a) + ' ÷ ' + fmt(b) + ' (몫을 반올림하여' + target + '까지 나타내기)';
+  const raw = parseFloat(a) / parseFloat(b);
+  const kind = 'rounding';
+  const ans = { raw, target };
+  const hint = '복잡한 계산보다 반올림 규칙에 집중: 5이상 올림, 미만 버림';
+
+  return { text, ans, hint, kind };
+}
       else { // 5: 나눠주고 남는 양 — 반드시 몫 ≥ 2
   let tries = 0;
   while (tries++ < 300) {
@@ -436,7 +426,9 @@ function renderBars(){
 
     // ④ 반올림 채점 (일의자리/첫째/둘째)
     if(p.kind==='rounding'){
-      const target=p.ans.target; const want = (target==='첫째자리'?1: (target==='둘째자리'?2:-1));
+      const target = p.ans.target;
+// '소수 첫째자리' / '소수 둘째자리' / '일의자리' 모두 지원
+const want = target.includes('둘째') ? 2 : (target.includes('첫째') ? 1 : -1);
       const inNum = parseNumberInput(v); if(inNum==null){ log('숫자로 입력해 주세요.'); return; }
       if(want===-1){
         const correct = Math.round(p.ans.raw);
