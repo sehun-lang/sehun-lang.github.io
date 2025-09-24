@@ -94,7 +94,8 @@
           <div class="title">플레이어</div>
           <div class="grid2">
             <div><div class="muted small">레벨</div><div class="big" id="level">1
-        <div><div class="muted small">경험치</div><div class="bar"><span id="xpbar" style="width:0%"></span></div></div>
+        <div><div class="muted small">경험치</div><div class="bar"><span id="xpbar" style="width:0%"></span></div>
+        <div class="small muted" id="xpText">다음 레벨까지 0 XP (0%)</div></div>
           </div>
           <div class="row" style="justify-content:space-between; margin-top:8px; white-space:nowrap">
   <div class="muted small">
@@ -260,6 +261,11 @@ function renderBars(){
   const need=needXpFor(state.level);
   setWidth('#xpbar',Math.min(100,state.xp/need*100).toFixed(1)+'%');
 
+   // ⬇ 추가: 남은 경험치 텍스트
+  const remain = Math.max(0, Math.ceil(need - state.xp));  // 남은 양을 보기 좋게 올림
+  const xpStr = `다음 레벨까지 ${remain} XP (${Math.floor(pct)}%)`;
+  setText('#xpText', xpStr);
+  
   // 레벨, 공격력
   setText('#level',state.level);
   setText('#atk',totalAtk());
